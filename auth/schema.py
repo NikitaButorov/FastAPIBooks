@@ -3,9 +3,7 @@ from typing import Optional
 
 from fastapi_users import schemas
 from fastapi_users import models
-from pydantic import EmailStr
-
-
+from pydantic import EmailStr, BaseModel
 
 
 class UserRead(schemas.BaseUser[int]):
@@ -21,7 +19,7 @@ class UserRead(schemas.BaseUser[int]):
         from_attributes = True
 
 
-class UserCreate(UserRead,schemas.BaseUserCreate):
+class UserCreate(schemas.BaseUserCreate):
     username: str
     email: EmailStr
     password: str
@@ -30,8 +28,10 @@ class UserCreate(UserRead,schemas.BaseUserCreate):
     is_superuser: Optional[bool] = False
     is_verified: Optional[bool] = False
 
-class UserUpdate(UserRead,schemas.BaseUserUpdate):
+class UserUpdate(schemas.BaseUserUpdate):
     pass
 
-class UserDB(UserRead,schemas.BaseUser):
-    pass
+class UserResponse(BaseModel):
+    username: str
+    email: str
+
