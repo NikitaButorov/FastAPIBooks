@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Path
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from database import get_db
 from Services import books as BookService
@@ -27,7 +28,7 @@ async def get(id:int = None, db: Session = Depends(get_db)):
     return result
 
 @router.put('/books/{id}', tags=["book"])
-async def update(id:int = None,data:BookDTO.Book = None, db: Session = Depends(get_db)):
+async def update(id:int = None,data:BookDTO.Book = None, db: AsyncSession = Depends(get_db)):
     result = await BookController.update(id,data,db)
     return result
 

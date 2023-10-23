@@ -1,3 +1,4 @@
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, Path
 from database import get_db
@@ -18,7 +19,7 @@ async def update(id:int = None,data:BookDTO.Book = None, db: Session = Depends(g
     return BookService.update(data, db, id)
 
 async def delete(id:int = None, db: Session = Depends(get_db)):
-    return  BookService.remove(id, db)
+    return BookService.remove(id, db)
 
 async def allboks(db: Session = Depends(get_db)):
     return BookService.allbooks(db)

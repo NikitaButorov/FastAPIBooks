@@ -1,9 +1,10 @@
 # coding: utf-8
-from sqlalchemy import Column, DateTime, ForeignKey, String, Table
-from sqlalchemy.dialects.mysql import INTEGER
+from datetime import datetime
+
+from sqlalchemy import Column, DateTime, ForeignKey, String, Table, Text, Integer, TIMESTAMP, Boolean, JSON
+from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-#sqlacodegen --tables books,authors,categories,bookauthors,bookcategories --outfile C:\SPTV21\hajusrakendus\ButorovSPTV21MVCBooks\Models\Models.py  --noindexes mysql+pymysql://root@localhost/books
 
 Base = declarative_base()
 metadata = Base.metadata
@@ -52,4 +53,27 @@ t_bookcategories = Table(
     'bookcategories', metadata,
     Column('book_id', ForeignKey('books.id', ondelete="CASCADE")),
     Column('category_id', ForeignKey('categories.category_id', ondelete="CASCADE"))
+)
+
+
+
+role = Table(
+    "role",
+    metadata,
+    Column("role_id", Integer, primary_key=True),
+    Column("name", String, nullable=False),
+    Column("permissions", JSON),
+)
+
+user = Table(
+    "user",
+    metadata,
+    Column("user_id", Integer, primary_key=True),
+    Column("email", String, nullable=False),
+    Column("username", String, nullable=False),
+    Column("role_id", Integer, ForeignKey(role.c.role_id)),
+    Column("hashed_password", String, nullable=False),
+    Column("is_active", Boolean, default=True, nullable=False),
+    Column("is_superuser", Boolean, default=False, nullable=False),
+    Column("is_verified", Boolean, default=False, nullable=False),
 )
