@@ -1,13 +1,25 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from streamlit import status
 
 from Models.Models import Book,Author,Category
 from sqlalchemy.orm import Session
+
+from database import User, get_db
 from dto import books,authors,categories
 from sqlalchemy import func, select
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from auth.manager import current_superuser
+
+
+def superuser_required(function):
+    async def wrapper(id: int = None, db: Session = Depends(get_db), user=Depends(current_superuser), *args, **kwargs):
+        if user is None or not user.is_superuser:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+        return function(id, db, user, *args, **kwargs)
+    return wrapper
 
 def create_books(book_data_list, author_data_list, category_data_list, db: Session):
     try:
@@ -63,8 +75,11 @@ def create_books(book_data_list, author_data_list, category_data_list, db: Sessi
         db.close()
 
 
-def get_book(id: int, db):
-    return db.query(Book).filter(Book.id==id).first()
+def get_book(id: int, db,user:User):
+    book = db.query(Book).filter(Book.id == id).first()
+    if book is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
+    return book
 
 def update(data: books.Book, db:Session, id:int ):
     book = db.query(Book).filter(Book.id==id).first()

@@ -7,6 +7,7 @@ from Controllers import authors as AuthorController
 
 router = APIRouter()
 
+
 @router.post('/authors', tags=["author"])
 async def create(data:AuthorDTO.Author = None, db:Session = Depends(get_db)):
     result = await AuthorController.create(data,db)

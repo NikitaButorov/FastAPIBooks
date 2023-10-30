@@ -1,16 +1,23 @@
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
-from database import get_db
+from streamlit import status
+
+from Services.books import superuser_required, get_book
+from database import get_db, User
 from Services import books as BookService
 from dto import books as BookDTO
 from dto import authors as AuthorDTO
 from dto import categories as CategoryDTO
 from typing import List
 from Controllers import books as BookController
+from auth.manager import current_superuser
+
 
 
 router = APIRouter()
+
+
 
 @router.post('/books', tags=["book"], operation_id="create")
 async def create(
@@ -23,14 +30,19 @@ async def create(
     return result
 
 @router.get('/books/id/{id}', tags=["book"])
-async def get(id:int = None, db: Session = Depends(get_db)):
-    result = await BookController.get(id,db)
+async def get(id: int = None, db: Session = Depends(get_db), user=Depends(current_superuser)):
+    result = await superuser_required(get_book)(id, db, user)
     return result
 
+
 @router.put('/books/{id}', tags=["book"])
-async def update(id:int = None,data:BookDTO.Book = None, db: AsyncSession = Depends(get_db)):
-    result = await BookController.update(id,data,db)
+async def update(id: int = None,
+    data: BookDTO.Book = None,
+    user: User = Depends(current_superuser),
+    db: AsyncSession = Depends(get_db)):
+    result = await superuser_required(BookController.update)(user, id, data, db)
     return result
+
 
 @router.delete('/books/{id}', tags=["book"])
 async def delete(id:int = None, db: Session = Depends(get_db)):
